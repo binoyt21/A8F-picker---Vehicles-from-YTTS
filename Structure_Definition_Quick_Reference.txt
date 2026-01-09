@@ -1,0 +1,222 @@
+================================================================================
+QUICK REFERENCE: SE11 STRUCTURE CREATION
+================================================================================
+Project: ZSCM_GET_VEHDATA
+Date: 2026-01-09
+================================================================================
+
+OBJECT 1: STRUCTURE
+-------------------
+Name: ZSCM_S_VEHICLE_OUTPUT
+Short Description: Vehicle Output Structure for ZSCM_GET_VEHDATA
+Development Class: ZSCM (or $TMP for local)
+
+FIELD DEFINITIONS (14 fields):
+-------------------
+
+Pos  Component    Typing   Data Element   Data Type  Length  Dec  Short Text
+---  -----------  -------  -------------  ---------  ------  ---  ----------------------------------
+1    AREA         Element  YAREA          CHAR       2       0    Area of Location - TTS
+2    REPORT_NO    Element  YREPORT_NO     CHAR       10      0    Truck Reporting Serial Id
+3    TRUCK_NO     Element  YTRUCK_NO      CHAR       15      0    Truck Number
+4    TRANSPTRCD   Element  LIFNR          CHAR       10      0    Transporter Code (Vendor)
+5    TRANSPLPT    Element  TPLST          CHAR       4       0    Transportation Planning Point
+6    SHNUMBER     Element  OIG_SHNUM      CHAR       10      0    TD Shipment Number
+7    STATUS       Element  STATUV_TXT     CHAR       4       0    Status Text
+8    REJECT_RES   Element  YREASONCD      CHAR       3       0    Rejection Reason Code
+9    TRUCK_TYPE   Element  YTRKTYPE       CHAR       3       0    Truck Type
+10   TRK_PURPOS   Element  YTRK_PURPS     CHAR       1       0    Truck Purpose
+11   VTWEG        Element  VTWEG          CHAR       2       0    Distribution Channel
+12   SPART        Element  SPART          CHAR       2       0    Division
+13   MATGR        Element  MVGR1          CHAR       3       0    Material Group 1
+14   TOTALQTY     Element  YIG_CMPQUA     QUAN       12      3    Compartment Quantity
+
+================================================================================
+
+OBJECT 2: TABLE TYPE
+--------------------
+Name: ZSCM_TT_VEHICLE_OUTPUT
+Short Description: Vehicle Output Table Type for ZSCM_GET_VEHDATA
+Development Class: ZSCM (or $TMP for local)
+
+TABLE TYPE PROPERTIES:
+----------------------
+Line Type:           ZSCM_S_VEHICLE_OUTPUT
+Category:            Structure
+Access:              Standard table
+Key Type:            Non-unique
+Key Definition:      Standard key
+Initial Size:        10 (optional)
+
+================================================================================
+
+ALTERNATIVE: IF CUSTOM DATA ELEMENTS (Y*) DON'T EXIST
+------------------------------------------------------
+Use DIRECT TYPES instead of Data Elements:
+
+Pos  Component    Typing   Type     Length  Dec  Short Text
+---  -----------  -------  -------  ------  ---  ----------------------------------
+1    AREA         Types    CHAR     2       0    Area of Location
+2    REPORT_NO    Types    CHAR     10      0    Truck Reporting Serial Id
+3    TRUCK_NO     Types    CHAR     15      0    Truck Number
+4    TRANSPTRCD   Types    CHAR     10      0    Transporter Code
+5    TRANSPLPT    Types    CHAR     4       0    Transportation Planning Point
+6    SHNUMBER     Types    CHAR     10      0    TD Shipment Number
+7    STATUS       Types    CHAR     4       0    Status Text
+8    REJECT_RES   Types    CHAR     3       0    Rejection Reason Code
+9    TRUCK_TYPE   Types    CHAR     3       0    Truck Type
+10   TRK_PURPOS   Types    CHAR     1       0    Truck Purpose
+11   VTWEG        Types    CHAR     2       0    Distribution Channel
+12   SPART        Types    CHAR     2       0    Division
+13   MATGR        Types    CHAR     3       0    Material Group 1
+14   TOTALQTY     Types    QUAN     12      3    Compartment Quantity
+
+NOTE: Standard SAP data elements (LIFNR, TPLST, VTWEG, SPART, MVGR1) 
+      should exist in all SAP systems.
+
+================================================================================
+
+DATA ELEMENT STATUS CHECK:
+--------------------------
+Run this in SE11 to check which data elements exist:
+
+Standard SAP (Should Exist):
+  ✓ LIFNR         - Vendor Number
+  ✓ TPLST         - Transportation Planning Point
+  ? OIG_SHNUM     - Shipment Number (may vary by system)
+  ? STATUV_TXT    - Status Text (may vary by system)
+  ✓ VTWEG         - Distribution Channel
+  ✓ SPART         - Division
+  ✓ MVGR1         - Material Group 1
+
+Custom Y* (May Not Exist):
+  ? YAREA         - Area of Location
+  ? YREPORT_NO    - Truck Reporting Serial Id
+  ? YTRUCK_NO     - Truck Number
+  ? YREASONCD     - Rejection Reason Code
+  ? YTRKTYPE      - Truck Type
+  ? YTRK_PURPS    - Truck Purpose
+  ? YIG_CMPQUA    - Compartment Quantity
+
+If data element doesn't exist (shows ? above):
+  Option 1: Use direct type (see table above)
+  Option 2: Create the data element (see SE11_Structure_Creation_Guide.md)
+
+================================================================================
+
+CREATION STEPS IN SE11:
+-----------------------
+
+STEP 1: Create Structure ZSCM_S_VEHICLE_OUTPUT
+  1. SE11
+  2. Select "Data Type"
+  3. Enter: ZSCM_S_VEHICLE_OUTPUT
+  4. Click "Create"
+  5. Select "Structure"
+  6. Enter short description
+  7. Add 14 components (use table above)
+  8. Save (assign to package)
+  9. Activate (Ctrl+F3)
+
+STEP 2: Create Table Type ZSCM_TT_VEHICLE_OUTPUT
+  1. SE11
+  2. Select "Data Type"
+  3. Enter: ZSCM_TT_VEHICLE_OUTPUT
+  4. Click "Create"
+  5. Select "Table Type"
+  6. Enter short description
+  7. Line Type: ZSCM_S_VEHICLE_OUTPUT
+  8. Access: Standard table
+  9. Save (assign to package)
+  10. Activate (Ctrl+F3)
+
+================================================================================
+
+FUNCTION MODULE INTERFACE (SE37):
+---------------------------------
+
+After structures are created, use in function module:
+
+IMPORTING:
+  IV_AREA          TYPE YAREA
+
+EXPORTING:
+  ET_VEHICLE_DATA  TYPE ZSCM_TT_VEHICLE_OUTPUT
+  EV_MESSAGE       TYPE CHAR100
+  EV_MESSAGE_TYPE  TYPE CHAR1
+
+EXCEPTIONS:
+  INVALID_INPUT
+  NO_CONFIGURATION_FOUND
+  DATABASE_ERROR
+
+================================================================================
+
+TEST CODE TO VERIFY STRUCTURE:
+------------------------------
+
+DATA: lt_vehicles TYPE zscm_tt_vehicle_output,
+      lw_vehicle TYPE zscm_s_vehicle_output.
+
+" Test 1: Can we declare the types?
+WRITE: / 'Structure declaration test: OK'.
+
+" Test 2: Can we assign values?
+lw_vehicle-area = '01'.
+lw_vehicle-truck_no = 'TEST123'.
+lw_vehicle-totalqty = '1000.500'.
+WRITE: / 'Field assignment test: OK'.
+
+" Test 3: Can we append to table?
+APPEND lw_vehicle TO lt_vehicles.
+WRITE: / 'Table append test: OK'.
+
+" Test 4: Check table count
+DESCRIBE TABLE lt_vehicles LINES DATA(lv_lines).
+WRITE: / 'Table has', lv_lines, 'entries'.
+
+IF lv_lines = 1.
+  WRITE: / 'All tests PASSED - Structure is working correctly!'.
+ENDIF.
+
+================================================================================
+
+TRANSPORT OBJECTS:
+------------------
+After creation, add these objects to transport:
+
+Object Type    Object Name                  Description
+-----------    --------------------------   ---------------------------
+TABL           ZSCM_S_VEHICLE_OUTPUT       Structure (14 fields)
+TTYP           ZSCM_TT_VEHICLE_OUTPUT      Table Type
+FUGR           ZSCM_VEHICLE_DATA           Function Group
+FUNC           ZSCM_GET_VEHDATA            Function Module
+PROG           ZTEST_SCM_GET_VEHDATA       Test Program
+
+================================================================================
+
+CHECKLIST:
+----------
+[ ] Created structure ZSCM_S_VEHICLE_OUTPUT (14 fields)
+[ ] Activated structure (green light in SE11)
+[ ] Created table type ZSCM_TT_VEHICLE_OUTPUT
+[ ] Activated table type (green light in SE11)
+[ ] Tested with sample code (see above)
+[ ] Created function group ZSCM_VEHICLE_DATA
+[ ] Created function module ZSCM_GET_VEHDATA
+[ ] Updated function interface with new types
+[ ] Tested function module with ZTEST_SCM_GET_VEHDATA
+[ ] Added all objects to transport request
+
+================================================================================
+
+CONTACT:
+--------
+For detailed instructions with screenshots, see:
+  - SE11_Structure_Creation_Guide.md (Step-by-step with examples)
+  - ZSCM_GET_VEHDATA_Technical_Specification.md (Section 2.2 - Type Definitions)
+
+================================================================================
+End of Quick Reference
+================================================================================
+
